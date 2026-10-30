@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sorting Algorithm Visualizer</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
+        <rect x="3"  y="20" width="4" height="9"  rx="1"/>
+        <rect x="9"  y="15" width="4" height="14" rx="1"/>
+        <rect x="15" y="10" width="4" height="19" rx="1"/>
+        <rect x="21" y="6"  width="4" height="23" rx="1"/>
+        <rect x="27" y="2"  width="3" height="27" rx="1"/>
+      </svg>
+      <h1 data-i18n="app.title">Sorting Algorithm Visualizer</h1>
+    </div>
+    <div class="kbd-hint">
+      <span><kbd>Space</kbd> <span data-i18n="kbd.play">play/pause</span></span>
+      <span><kbd>←</kbd><kbd>→</kbd> <span data-i18n="kbd.step">step</span></span>
+      <span><kbd>N</kbd> <span data-i18n="kbd.new">new array</span></span>
+      <span><kbd>M</kbd> <span data-i18n="kbd.sound">sound</span></span>
+      <span><kbd>V</kbd> <span data-i18n="kbd.view">view</span></span>
+      <span><kbd>C</kbd> <span data-i18n="kbd.code">code</span></span>
+    </div>
+    <div class="top-controls">
+      <div class="seg small" id="langSeg" role="radiogroup" aria-label="Language">
+        <button data-lang="en">EN</button><button data-lang="de">DE</button>
+      </div>
+      <select id="theme" class="small-select" aria-label="Theme">
+        <option value="auto" data-i18n="theme.auto">Auto</option>
+        <option value="dark" data-i18n="theme.dark">Dark</option>
+        <option value="light" data-i18n="theme.light">Light</option>
+      </select>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- ================= STAGE (animation) ================= -->
+    <section class="stagebox">
+      <div class="stage-toolbar">
+        <div class="tb-group">
+          <button id="dockCode" class="btn tb" aria-pressed="false"><span aria-hidden="true">&lt;/&gt;</span> <span data-i18n="dock.code">Code</span></button>
+          <button id="dockQuiz" class="btn tb" aria-pressed="false"><span aria-hidden="true">?</span> <span data-i18n="dock.quiz">Quiz</span></button>
+        </div>
+        <div class="tb-group">
+          <button id="recordBtn" class="btn tb"><span class="rec-dot" aria-hidden="true"></span> <span data-i18n="rec.start">Record run</span></button>
+          <button id="copyLink" class="btn tb"><span aria-hidden="true">🔗</span> <span data-i18n="link.copy">Copy link</span></button>
+        </div>
+      </div>
+      <div class="stage">
+        <div id="lanes" class="lanes count-1"></div>
+        <aside id="dock" class="dock" hidden>
+          <div id="codePanel" class="code-panel" hidden></div>
+          <div id="quizPanel" class="quiz-panel" hidden></div>
+        </aside>
+        <div id="busy" class="busy" hidden><div class="spinner"></div><span data-i18n="busy.recording">Recording…</span></div>
+      </div>
+      <div class="timeline">
+        <input type="range" id="timeline" min="0" max="10000" value="0" step="1" aria-label="Timeline">
+        <div class="timeline-meta">
+          <span id="stepOut">step 0 / 0</span>
+          <span id="durationOut"></span>
+        </div>
+        <div id="narration" class="narration" aria-live="off"></div>
+      </div>
+    </section>
+
+    <!-- ================= CONTROLS ================= -->
+    <aside class="controls" aria-label="Controls">
+      <section class="panel">
+        <h2 data-i18n="panel.array">Array</h2>
+        <label class="field">
+          <span class="field-label"><span data-i18n="array.size">Size</span> <output id="sizeOut">100</output></span>
+          <input type="range" id="size" min="0" max="1000" step="1" value="500">
+        </label>
+        <div class="presets" id="sizePresets">
+          <button class="chip" data-n="16">16</button><button class="chip" data-n="64">64</button>
+          <button class="chip" data-n="256">256</button><button class="chip" data-n="1024">1024</button>
+          <button class="chip" data-n="4096">4096</button><button class="chip" data-n="16384">16384</button>
+        </div>
+        <label class="field">
+          <span class="field-label" data-i18n="array.input">Input</span>
+          <select id="input">
+            <option value="shuffled" data-i18n="input.shuffled">Shuffled</option>
+            <option value="dups" data-i18n="input.dups">Random (duplicates)</option>
+            <option value="nearly" data-i18n="input.nearly">Nearly sorted</option>
+            <option value="reversed" data-i18n="input.reversed">Reversed</option>
+            <option value="few" data-i18n="input.few">Few unique values</option>
+            <option value="organ" data-i18n="input.organ">Organ pipe</option>
+            <option value="sawtooth" data-i18n="input.sawtooth">Sawtooth</option>
+            <option value="sorted" data-i18n="input.sorted">Already sorted</option>
+            <option value="stability" data-i18n="input.stability">Stability test</option>
+            <option value="killer" data-i18n="input.killer">Killer (McIlroy)</option>
+            <option value="custom" data-i18n="input.custom">Custom…</option>
+          </select>
+        </label>
+        <p id="inputNote" class="muted small note-line" hidden></p>
+        <div id="customBox" class="custom-box" hidden>
+          <textarea id="customText" rows="3" spellcheck="false" data-i18n-placeholder="custom.placeholder" placeholder="e.g. 5 3 8 1 9 2"></textarea>
+          <div class="row">
+            <button id="customApply" class="btn" data-i18n="custom.apply">Apply</button>
+            <span id="customErr" class="err small"></span>
+          </div>
+        </div>
+        <div class="row">
+          <button id="newArray" class="btn grow"><span aria-hidden="true">⟳</span> <span data-i18n="array.new">New array</span></button>
+          <button id="drawBtn" class="btn" aria-pressed="false" data-i18n-title="array.drawTitle" title="Draw the bars with the mouse"><span aria-hidden="true">✎</span> <span data-i18n="array.draw">Draw</span></button>
+        </div>
+        <p class="muted small seed-line"><span data-i18n="array.seed">Seed</span> <code id="seedOut">1</code></p>
+      </section>
+
+      <section class="panel">
+        <h2 data-i18n="panel.playback">Playback</h2>
+        <div class="transport">
+          <button id="rewind" class="btn icon" data-i18n-title="play.rewind" title="Rewind">⏮</button>
+          <button id="stepBack" class="btn icon" data-i18n-title="play.back" title="Step back (←)">◀︎|</button>
+          <button id="play" class="btn icon primary" data-i18n-title="play.play" title="Play (Space)">▶</button>
+          <button id="stepFwd" class="btn icon" data-i18n-title="play.fwd" title="Step forward (→)">|▶︎</button>
+          <button id="toEnd" class="btn icon" data-i18n-title="play.end" title="Jump to end">⏭</button>
+        </div>
+        <label class="field">
+          <span class="field-label"><span data-i18n="play.speed">Speed</span> <output id="speedOut">500 ops/s</output></span>
+          <input type="range" id="speed" min="0" max="1000" step="1" value="540">
+        </label>
+        <div class="presets" id="speedPresets">
+          <button class="chip" data-ops="2" data-i18n="speed.slowmo">Slow-mo</button>
+          <button class="chip" data-ops="30" data-i18n="speed.slow">Slow</button>
+          <button class="chip" data-ops="500" data-i18n="speed.normal">Normal</button>
+          <button class="chip" data-ops="5000" data-i18n="speed.fast">Fast</button>
+          <button class="chip" data-ops="100000" data-i18n="speed.turbo">Turbo</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2 data-i18n="panel.cost">Cost model</h2>
+        <select id="costPreset" aria-label="Cost preset">
+          <option value="steps" data-i18n="cost.steps">Every step costs 1</option>
+          <option value="flash" data-i18n="cost.flash">Flash memory (writes ×10)</option>
+          <option value="cmp" data-i18n="cost.cmp">Expensive comparisons (×10)</option>
+          <option value="freeReads" data-i18n="cost.freeReads">Reads are free</option>
+          <option value="custom" data-i18n="cost.custom">Custom</option>
+        </select>
+        <div class="weights" id="weights">
+          <label><span data-i18n="cost.w.compare">Compare</span> <output data-w="0">1</output><input type="range" min="0" max="10" step="0.5" value="1" data-w="0"></label>
+          <label><span data-i18n="cost.w.swap">Swap</span> <output data-w="1">1</output><input type="range" min="0" max="10" step="0.5" value="1" data-w="1"></label>
+          <label><span data-i18n="cost.w.write">Write</span> <output data-w="2">1</output><input type="range" min="0" max="10" step="0.5" value="1" data-w="2"></label>
+          <label><span data-i18n="cost.w.read">Read</span> <output data-w="3">1</output><input type="range" min="0" max="10" step="0.5" value="1" data-w="3"></label>
+        </div>
+        <p class="muted small" data-i18n="cost.hint">Each recorded step is charged by its type. The timeline, the speed and the race ranking use this cost.</p>
+      </section>
+
+      <section class="panel">
+        <h2 data-i18n="panel.display">Display</h2>
+        <div class="seg" id="viewSeg" role="radiogroup" aria-label="Visual style">
+          <button data-view="bars" data-i18n="view.bars">Bars</button>
+          <button data-view="dots" data-i18n="view.dots">Dots</button>
+          <button data-view="spectrum" data-i18n="view.spectrum">Spectrum</button>
+          <button data-view="disc" data-i18n="view.disc">Disc</button>
+          <button data-view="disparity" data-i18n="view.disparity" data-i18n-title="view.disparityTitle" title="Points reach the rim when they are in place">Disparity</button>
+        </div>
+        <label class="toggle"><input type="checkbox" id="rainbow"> <span data-i18n="display.rainbow">Rainbow colours</span></label>
+        <label class="toggle"><input type="checkbox" id="colorblind"> <span data-i18n="display.colorblind">Colour-blind safe palette</span></label>
+        <label class="toggle"><input type="checkbox" id="showAux" checked> <span data-i18n="display.aux">Helper arrays</span></label>
+        <label class="toggle"><input type="checkbox" id="showRanges" checked> <span data-i18n="display.ranges">Active range &amp; call stack</span></label>
+        <label class="toggle"><input type="checkbox" id="sound"> <span data-i18n="display.sound">Sound</span></label>
+        <label class="field">
+          <span class="field-label"><span data-i18n="display.volume">Volume</span> <output id="volOut">30%</output></span>
+          <input type="range" id="volume" min="0" max="100" value="30">
+        </label>
+      </section>
+
+      <section class="panel">
+        <h2 data-i18n="panel.race">Race mode</h2>
+        <p class="muted small" data-i18n="race.hint">Run up to 4 algorithms side by side on the same array.</p>
+        <button id="addLane" class="btn wide" data-i18n="race.add">＋ Add lane</button>
+      </section>
+
+      <section class="panel legend">
+        <h2 data-i18n="panel.legend">Legend</h2>
+        <ul>
+          <li><i class="sw c-cmp"></i><span data-i18n="legend.compare">Compare</span></li>
+          <li><i class="sw c-write"></i><span data-i18n="legend.write">Swap / write</span></li>
+          <li><i class="sw c-read"></i><span data-i18n="legend.read">Read</span></li>
+          <li><i class="sw c-mark"></i><span data-i18n="legend.mark">Pivot / marker</span></li>
+          <li><i class="sw c-ok"></i><span data-i18n="legend.ok">Verified sorted</span></li>
+          <li><i class="sw c-range"></i><span data-i18n="legend.range">Active range</span></li>
+        </ul>
+      </section>
+    </aside>
+
+    <!-- ================= TABS ================= -->
+    <section class="below">
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-tab="info" role="tab" data-i18n="tab.info">Info</button>
+        <button class="tab" data-tab="analysis" role="tab" data-i18n="tab.analysis">Analysis</button>
+        <button class="tab" data-tab="editor" role="tab" data-i18n="tab.editor">Editor</button>
+        <button class="tab" data-tab="cheat" role="tab" data-i18n="tab.cheat">Cheat sheet</button>
+      </div>
+
+      <section class="tabpanel info-card" id="tab-info">
+        <div class="info-tabs" id="infoTabs"></div>
+        <div id="infoBody"></div>
+      </section>
+
+      <section class="tabpanel" id="tab-analysis" hidden>
+        <div id="analysisRoot"></div>
+      </section>
+
+      <section class="tabpanel" id="tab-editor" hidden>
+        <div id="editorRoot"></div>
+      </section>
+
+      <section class="tabpanel" id="tab-cheat" hidden>
+        <p class="muted small" data-i18n="cheat.hint">Click a row to load it into the selected lane.</p>
+        <div class="table-wrap">
+          <table id="cheatTable">
+            <thead>
+              <tr>
+                <th data-i18n="cheat.algorithm">Algorithm</th><th data-i18n="cheat.family">Family</th>
+                <th data-i18n="cx.best">Best</th><th data-i18n="cx.avg">Average</th><th data-i18n="cx.worst">Worst</th>
+                <th data-i18n="cx.mem">Memory</th><th data-i18n="cx.stable">Stable</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer class="foot muted small" data-i18n="footer">
+        Each algorithm runs once on a copy of the array and records every comparison, swap, write and read.
+        The animation replays that recording, which is why you can step backwards and scrub the timeline.
+      </footer>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <template id="laneTpl">
+    <div class="lane">
+      <div class="lane-head">
+        <select class="algo-select" aria-label="Algorithm"></select>
+        <span class="mystery" hidden></span>
+        <span class="badge"></span>
+        <button class="lane-btn lane-remove" title="Remove lane">✕</button>
+      </div>
+      <div class="lane-stats"></div>
+      <div class="lane-canvas"><canvas></canvas><div class="lane-note"></div></div>
+    </div>
+  </template>
+
+  <!-- classic scripts (not ES modules) so the page also works when opened via file:// -->
+  <script src="js/algorithms.js"></script>
+  <script src="js/algo-info.js"></script>
+  <script src="js/algo-info-de.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/recorder.js"></script>
+  <script src="js/sound.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/analysis.js"></script>
+  <script src="js/editor.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
